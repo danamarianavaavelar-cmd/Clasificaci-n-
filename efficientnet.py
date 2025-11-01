@@ -33,3 +33,15 @@ train_df, temp_df = train_test_split(df, test_size=0.3, stratify=df['label'], ra
 val_df, test_df = train_test_split(temp_df, test_size=0.5, stratify=temp_df['label'], random_state=42)
 print(f"Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")
 
+# GENERADORES Y TAMAÑO DE IMAGENES
+IMG_SIZE = (244, 244)
+train_gen = ImageDataGenerator(rescale=1./255, rotation_range=15, zoom_range=0.2,
+                               horizontal_flip=True, vertical_flip=True)
+val_test_gen = ImageDataGenerator(rescale=1./255)
+
+train_data = train_gen.flow_from_dataframe(train_df, x_col='image_path', y_col='label',
+                                           target_size=IMG_SIZE, class_mode='raw', batch_size=32)
+val_data = val_test_gen.flow_from_dataframe(val_df, x_col='image_path', y_col='label',
+                                            target_size=IMG_SIZE, class_mode='raw', batch_size=32)
+test_data = val_test_gen.flow_from_dataframe(test_df, x_col='image_path', y_col='label',
+                                             target_size=IMG_SIZE, class_mode='raw', batch_size=32, shuffle=False)
