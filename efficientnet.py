@@ -109,3 +109,65 @@ for lr in tasas_aprendizaje:
                 "cm": cm
             }
             experimentos_resultados.append(exp_result)
+            
+# RESULTADOS 
+res_df = pd.DataFrame([{
+    "lr": e["lr"], "opt": e["opt"], "capas_descongeladas": e["capas_descongeladas"],
+    "auc": e["auc"], "f1": e["f1"], "recall": e["recall"], "precision": e["precision"]
+} for e in experimentos_resultados])
+res_df.to_csv(os.path.join(output_dir, "grid_search_results.csv"), index=False)
+
+# GRAFICAS
+for i, e in enumerate(experimentos_resultados):
+    hist = e['hist']
+    cm = e['cm']
+    nombre_base = f"EfficientNet_lr{e['lr']}_opt{e['opt']}_capas{e['capas_descongeladas']}"
+
+    plt.figure(figsize=(12,4))
+    plt.subplot(1,2,1)
+    plt.plot(hist['accuracy'], label='train_acc')
+    plt.plot(hist['val_accuracy'], label='val_acc')
+    plt.title(f"Accuracy {nombre_base}")
+    plt.legend()
+
+    plt.subplot(1,2,2)
+    plt.plot(hist['auc'], label='train_auc')
+    plt.plot(hist['val_auc'], label='val_auc')
+    plt.title(f"AUC {nombre_base}")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, f"{nombre_base}_acc_auc.png"))
+    plt.close()
+
+#SELECCIÓN DEL MEJOR MODELO Y EVALUAR EN TEST
+mejor_idx = res_df['auc'].idxmax()
+mejor = res_df.loc[mejor_idx]
+print("\nMejor combinación encontrada:\n", mejor)
+
+modelo_final = crear_modelo(mejor["lr"], mejor["opt"], mejor["capas_descongeladas"])
+modelo_final.fit(train_data, epochs=epochs, verbose=1)
+
+preds_test = modelo_final.predict(test_data).ravel()
+y_test = test_data.labels
+
+print("\nResultados en Test:")
+print(f"AUC: {roc_auc_score(y_test, preds_test):.4f}")
+print(f"F1: {f1_score(y_test, preds_test > 0.5):.4f}")
+print(f"Recall: {recall_score(y_test, preds_test > 0.5):.4f}")
+print(f"Precision: {precision_score(y_test, preds_test > 0.5):.4f}")
+
+# CURVA ROC FINAL
+fpr, tpr, _ = roc_curve(y_test, preds_test)
+roc_auc = auc(fpr, tpr)
+plt.figure(figsize=(6,6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC (AUC={roc_auc:.2f})')
+plt.plot([0,1], [0,1], color='navy', lw=2, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Curva ROC - Mejor modelo')
+plt.legend(loc="lower right")
+plt.tight_layout()
+plt.savefig(os.path.join(plots_dir, "roc_mejor_modelo.png"))
+plt.close()
+
+print("\nTodos los resultados guardados en:", plots_dir)
