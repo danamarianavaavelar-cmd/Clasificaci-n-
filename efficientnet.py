@@ -27,3 +27,9 @@ df = df_simple.copy()
 df['image_path'] = df['image_name'].apply(lambda x: os.path.join(ruta_imagenes, x+ ".jpg"))
 df = df[df['image_path'].apply(os.path.exists)]
 print("Imágenes encontradas:", df.shape[0])
+
+# DIVISION DEL ENTRENAMIENTO 70%, VALIDACIÓN 15% Y PRUEBA 15%
+train_df, temp_df = train_test_split(df, test_size=0.3, stratify=df['label'], random_state=42)
+val_df, test_df = train_test_split(temp_df, test_size=0.5, stratify=temp_df['label'], random_state=42)
+print(f"Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")
+
