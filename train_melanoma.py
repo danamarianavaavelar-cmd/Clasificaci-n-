@@ -72,3 +72,11 @@ def crear_modelo(lr, optimizador, capas_descongeladas):
 
     model.compile(optimizer=opt, loss="binary_crossentropy", metrics=["accuracy", tf.keras.metrics.AUC(name="auc")])
     return model
+
+# GRID 
+tasas_aprendizaje = [0.01, 0.001]
+optimizadores = ["adam", "sgd"]
+capas_descongeladas = [0, 10]
+epochs = 6
+
+experimentos_resultados = []
