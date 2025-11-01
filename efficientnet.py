@@ -45,3 +45,28 @@ val_data = val_test_gen.flow_from_dataframe(val_df, x_col='image_path', y_col='l
                                             target_size=IMG_SIZE, class_mode='raw', batch_size=32)
 test_data = val_test_gen.flow_from_dataframe(test_df, x_col='image_path', y_col='label',
                                              target_size=IMG_SIZE, class_mode='raw', batch_size=32, shuffle=False)
+
+# MODELO EFFICIENTNET Y TRANSFER LEARNING
+def crear_modelo(lr, optimizador, capas_descongeladas):
+    base = EfficientNetB0(weights="imagenet", include_top=False, input_shape=(*IMG_SIZE, 3))
+    base.trainable = False
+
+    if capas_descongeladas > 0:
+        for layer in base.layers[-capas_descongeladas:]:
+            layer.trainable = True
+
+    inputs = tf.keras.Input(shape=(*IMG_SIZE, 3))
+    x = base(inputs, training=False)
+    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.Dense(128, activation="relu")(x)
+    x = layers.Dropout(0.3)(x)
+    outputs = layers.Dense(1, activation="sigmoid")(x)
+    model = models.Model(inputs, outputs)
+
+    if optimizador == "adam":
+        opt = tf.keras.optimizers.Adam(learning_rate=lr)
+    else:
+        opt = tf.keras.optimizers.SGD(learning_rate=lr, momentum=0.9)
+
+    model.compile(optimizer=opt, loss="binary_crossentropy", metrics=["accuracy", tf.keras.metrics.AUC(name="auc")])
+    return model
