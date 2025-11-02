@@ -80,3 +80,20 @@ capas_descongeladas = [0, 10]
 epochs = 6
 
 experimentos_resultados = []
+for lr in tasas_aprendizaje:
+    for opt in optimizadores:
+        for capas in capas_descongeladas:
+            print(f"\nEntrenando ResNet50 | lr={lr} | opt={opt} | capas={capas}")
+            model = crear_modelo(lr, opt, capas)
+
+            early = tf.keras.callbacks.EarlyStopping(monitor="val_auc", patience=2, restore_best_weights=True)
+            hist = model.fit(train_data, validation_data=val_data, epochs=epochs, callbacks=[early], verbose=1)
+
+            preds_val = model.predict(val_data).ravel()
+            y_val = val_data.labels
+
+            auc_val = roc_auc_score(y_val, preds_val)
+            f1_val = f1_score(y_val, preds_val > 0.5)
+            recall_val = recall_score(y_val, preds_val > 0.5)
+            precision_val = precision_score(y_val, preds_val > 0.5)
+            cm = confusion_matrix(y_val, preds_val > 0.5)
