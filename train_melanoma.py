@@ -139,7 +139,7 @@ for i, e in enumerate(experimentos_resultados):
     plt.tight_layout()
     plt.savefig(os.path.join(plots_dir, f"{nombre_base}_acc_auc.png"))
     plt.close()
-    
+
 # MEJOR MODELO 
 mejor_idx = res_df['auc'].idxmax()
 mejor = res_df.loc[mejor_idx]
@@ -156,3 +156,19 @@ print(f"AUC: {roc_auc_score(y_test, preds_test):.4f}")
 print(f"F1: {f1_score(y_test, preds_test > 0.5):.4f}")
 print(f"Recall: {recall_score(y_test, preds_test > 0.5):.4f}")
 print(f"Precision: {precision_score(y_test, preds_test > 0.5):.4f}")
+
+# Curva ROC final
+fpr, tpr, _ = roc_curve(y_test, preds_test)
+roc_auc = auc(fpr, tpr)
+plt.figure(figsize=(6,6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC (AUC={roc_auc:.2f})')
+plt.plot([0,1], [0,1], color='navy', lw=2, linestyle='--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Curva ROC - Mejor modelo ResNet50')
+plt.legend(loc="lower right")
+plt.tight_layout()
+plt.savefig(os.path.join(plots_dir, "roc_mejor_modelo_resnet.png"))
+plt.close()
+
+print("\nTodos los resultados guardados en:", plots_dir) 
