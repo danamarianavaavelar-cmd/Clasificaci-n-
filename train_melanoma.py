@@ -139,3 +139,20 @@ for i, e in enumerate(experimentos_resultados):
     plt.tight_layout()
     plt.savefig(os.path.join(plots_dir, f"{nombre_base}_acc_auc.png"))
     plt.close()
+    
+# MEJOR MODELO 
+mejor_idx = res_df['auc'].idxmax()
+mejor = res_df.loc[mejor_idx]
+print("\nMejor combinación encontrada:\n", mejor)
+
+modelo_final = crear_modelo(mejor["lr"], mejor["opt"], mejor["capas_descongeladas"])
+modelo_final.fit(train_data, epochs=epochs, verbose=1)
+
+preds_test = modelo_final.predict(test_data).ravel()
+y_test = test_data.labels
+
+print("\nResultados en Test:")
+print(f"AUC: {roc_auc_score(y_test, preds_test):.4f}")
+print(f"F1: {f1_score(y_test, preds_test > 0.5):.4f}")
+print(f"Recall: {recall_score(y_test, preds_test > 0.5):.4f}")
+print(f"Precision: {precision_score(y_test, preds_test > 0.5):.4f}")
