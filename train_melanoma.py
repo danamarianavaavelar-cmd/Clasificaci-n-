@@ -97,3 +97,16 @@ for lr in tasas_aprendizaje:
             recall_val = recall_score(y_val, preds_val > 0.5)
             precision_val = precision_score(y_val, preds_val > 0.5)
             cm = confusion_matrix(y_val, preds_val > 0.5)
+            
+            exp_result = {
+                "lr": lr,
+                "opt": opt,
+                "capas_descongeladas": capas,
+                "auc": auc_val,
+                "f1": f1_val,
+                "recall": recall_val,
+                "precision": precision_val,
+                "hist": hist.history,
+                "cm": cm
+            }
+            experimentos_resultados.append(exp_result)
