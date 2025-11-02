@@ -119,3 +119,23 @@ res_df = pd.DataFrame([{
 res_df.to_csv(os.path.join(output_dir, "grid_search_results_resnet.csv"), index=False)
 
 # GRAFICAS
+for i, e in enumerate(experimentos_resultados):
+    hist = e['hist']
+    cm = e['cm']
+    nombre_base = f"ResNet50_lr{e['lr']}_opt{e['opt']}_capas{e['capas_descongeladas']}"
+
+    plt.figure(figsize=(12,4))
+    plt.subplot(1,2,1)
+    plt.plot(hist['accuracy'], label='train_acc')
+    plt.plot(hist['val_accuracy'], label='val_acc')
+    plt.title(f"Accuracy {nombre_base}")
+    plt.legend()
+
+    plt.subplot(1,2,2)
+    plt.plot(hist['auc'], label='train_auc')
+    plt.plot(hist['val_auc'], label='val_auc')
+    plt.title(f"AUC {nombre_base}")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, f"{nombre_base}_acc_auc.png"))
+    plt.close()
