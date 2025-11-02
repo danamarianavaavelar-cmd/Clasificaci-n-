@@ -110,3 +110,12 @@ for lr in tasas_aprendizaje:
                 "cm": cm
             }
             experimentos_resultados.append(exp_result)
+
+# RESULTADOS
+res_df = pd.DataFrame([{
+    "lr": e["lr"], "opt": e["opt"], "capas_descongeladas": e["capas_descongeladas"],
+    "auc": e["auc"], "f1": e["f1"], "recall": e["recall"], "precision": e["precision"]
+} for e in experimentos_resultados])
+res_df.to_csv(os.path.join(output_dir, "grid_search_results_resnet.csv"), index=False)
+
+# GRAFICAS
